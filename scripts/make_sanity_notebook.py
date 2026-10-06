@@ -38,6 +38,8 @@ except Exception as e:
 print('torch', torch.__version__, '| transformers', transformers.__version__)
 for i in range(torch.cuda.device_count()):
     p = torch.cuda.get_device_properties(i); print(i, p.name, f'{p.total_memory/1e9:.1f} GB')
+if torch.cuda.device_count() < 2:
+    print('WARNING: fewer than 2 GPUs. Choose Accelerator = GPU T4 x2; otherwise the fp32 reference offloads to CPU (much slower).')
 OUT = '/kaggle/working/sanity' if os.path.exists('/kaggle') else 'results/sanity'
 os.makedirs(OUT, exist_ok=True)"""),
 md("## Prompts: 8 Belebele questions (paired by uid) in English, MSA and Egyptian (same items → 24 prompts)"),
@@ -57,6 +59,13 @@ PRECISIONS = ['fp32', 'fp16', 'bf16', 'int8', 'nf4']   # bf16 is emulated on T4:
 
 def path(m, p): return f'{OUT}/{m}__{p}.json'
 
+def free_model_cache(model_id):
+    from huggingface_hub import scan_cache_dir
+    info = scan_cache_dir()
+    revs = [r.commit_hash for repo in info.repos if repo.repo_id == model_id for r in repo.revisions]
+    if revs:
+        info.delete_revisions(*revs).execute()
+
 for short, mid in LLMS.items():
     for prec in PRECISIONS:
         if os.path.exists(path(short, prec)):
@@ -64,7 +73,10 @@ for short, mid in LLMS.items():
         print('running', short, prec, flush=True)
         rec = run_precision(mid, prec, prompts, gen_prompts, compute_dtype='fp16')
         json.dump(to_jsonable(rec), open(path(short, prec), 'w'), ensure_ascii=False)
-        print('  ok' if rec['ok'] else '  FAILED: ' + rec['error'][:300])"""),
+        print('  ok' if rec['ok'] else '  FAILED: ' + rec['error'][:300])
+    if short != 'gemma3-4b':   # free disk (~8 GB per model); Gemma is reused below for the GGUF test
+        free_model_cache(mid)
+    !df -h /root | tail -1"""),
 md("If a model is unstable in fp16, its int8/nf4 runs above also used fp16 compute. Re-run them with fp32 compute to separate the two effects:"),
 code("""UNSTABLE_FP16 = []   # fill after reading the summary below, e.g. ['gemma3-4b']
 for short in UNSTABLE_FP16:
@@ -154,6 +166,14 @@ for name, ngl, ps in [('gpu', -1, prompts), ('cpu', 0, prompts[:8])]:
     except Exception as ex:
         gg[name] = {'ok': False, 'error': f'{type(ex).__name__}: {ex}'}
 json.dump(gg, open(f'{OUT}/gguf_gemma3-4b_Q4_K_M.json', 'w')); gg"""),
+md("## Report (copy this cell's output back if downloading the zip is inconvenient)"),
+code("""import platform, bitsandbytes, sentence_transformers
+print('ENV', platform.python_version(), 'torch', torch.__version__, 'transformers', transformers.__version__,
+      'bitsandbytes', bitsandbytes.__version__, 'sentence-transformers', sentence_transformers.__version__,
+      'GPUs', [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())])
+print('\\n=== LLM SUMMARY ===');       print(summary.to_csv(index=False))
+print('=== EMBEDDING SUMMARY ===');     print(emb_summary.to_csv(index=False))
+print('=== GGUF ===');                  print(json.dumps(gg, indent=1) if 'gg' in globals() else 'not run')"""),
 md("## Save\nDownload `sanity.zip` from the Output tab and unzip it into `results/sanity/` in the repo."),
 code("""!cd /kaggle/working && zip -qr sanity.zip sanity && ls -la sanity.zip"""),
 ]
