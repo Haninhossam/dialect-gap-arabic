@@ -1,0 +1,4 @@
+model,ok,nonfinite_fp16,max_abs_cos_diff,retrieval_argmax_agree,R@1_fp32_arz->eng_100,error
+labse,True,0,0.0007506608963012695,1.0,1.0,
+bge-m3,True,0,0.0008154511451721191,1.0,1.0,
+qwen3-emb-0.6b,True,0,0.0007299482822418213,1.0,1.0,
