@@ -28,7 +28,11 @@ code("""REPO_URL = "https://github.com/Haninhossam/dialect-gap-arabic.git"
 !git clone -q $REPO_URL || (cd dialect-gap-arabic && git pull -q)
 %cd dialect-gap-arabic
 !pip install -q -U "transformers>=5.0" accelerate bitsandbytes sentence-transformers && pip install -q -e ."""),
-code("""import os, json, glob, torch, transformers
+code("""# `pip install -e` is not visible to an already-running kernel (.pth files are read at startup),
+# so put the package source on the path directly. Works on Kaggle and Colab without a restart.
+import sys, os
+sys.path.insert(0, os.path.abspath('src'))
+import json, glob, torch, transformers
 import numpy as np, pandas as pd
 from dialectgap.env import load_hf_token
 load_hf_token()   # reads Kaggle secret 'Kaggle_Token' (or 'HF_TOKEN'), verifies it and Gemma access
