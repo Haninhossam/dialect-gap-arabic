@@ -2,7 +2,7 @@
 
 Raw files: `results/sanity/` (one JSON per model × precision, `summary.csv`, `embedding_summary.csv`).
 Setup: 24 prompts = 8 Belebele questions (paired by uid) × {eng_Latn, arb_Arab, arz_Arab}. Letter log-likelihood scoring;
-the fp32 run is the reference. Quantized runs used **fp16 compute**. The GGUF section did not run (old cell; fixed in `5daeba0`).
+the fp32 run is the reference. Quantized runs used **fp16 compute**. The GGUF section did not run (old cell; fixed in `1592253`).
 
 ## 1. LLMs
 
