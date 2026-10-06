@@ -1,0 +1,12 @@
+[project]
+name = "dialectgap"
+version = "0.1.0"
+description = "The Arabic dialect gap in small language models and its interaction with quantization"
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

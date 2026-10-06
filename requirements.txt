@@ -1,0 +1,17 @@
+# Version ranges chosen to coexist with Kaggle/Colab preinstalled torch.
+# Exact versions of every run are captured via `pip freeze` in results/runs.jsonl.
+torch>=2.1
+transformers>=4.44,<5
+datasets>=2.20
+accelerate>=0.33
+bitsandbytes>=0.43        # 8-bit / 4-bit quantization (RQ3)
+peft>=0.12                # LoRA (RQ2c, only if licensed dialect data exists)
+sentence-transformers>=3.0
+sentencepiece>=0.2
+pyyaml>=6.0
+numpy>=1.26
+pandas>=2.0
+scipy>=1.11               # paired significance tests
+scikit-learn>=1.4
+matplotlib>=3.8
+pytest>=8.0

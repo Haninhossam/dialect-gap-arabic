@@ -1,0 +1,19 @@
+# Shared defaults. Experiment configs set `base: base.yaml` and override fields.
+seed: 42
+seeds: [42, 13, 7]          # for stochastic parts (LoRA, few-shot example sampling)
+
+data:
+  version: null             # filled once Phase 2 builds the processed, aligned item sets
+  varieties: []             # filled after Phase 1 approval (e.g. eng_Latn, arb_Arab, arz_Arab, ...)
+
+eval:
+  bootstrap_resamples: 10000
+  ci: 0.95
+  batch_size: 8
+
+model:
+  name: null
+  dtype: float16            # float16 | int8 | nf4  (RQ3)
+  max_new_tokens: 8
+
+output_dir: outputs/default # on Kaggle: /kaggle/working/outputs/<run>

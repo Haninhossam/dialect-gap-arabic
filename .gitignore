@@ -1,0 +1,27 @@
+# Data (third-party data is never committed unless its license allows it)
+data/raw/*
+data/interim/*
+data/processed/*
+!data/**/.gitkeep
+
+# Models / checkpoints
+checkpoints/
+outputs/
+*.safetensors
+*.bin
+*.pt
+*.ckpt
+
+# Python / notebooks
+__pycache__/
+*.pyc
+.pytest_cache/
+.ipynb_checkpoints/
+*.egg-info/
+.venv/
+venv/
+
+# Secrets / misc
+.env
+wandb/
+.DS_Store
