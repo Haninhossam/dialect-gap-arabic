@@ -11,6 +11,10 @@ eval:
   ci: 0.95
   batch_size: 8
 
+llms: [gemma3-4b, nilechat-4b, qwen3.5-4b]            # ids in dialectgap/models.py:LLMS
+embedders: [labse, bge-m3, qwen3-emb-0.6b]
+precisions: [fp16, int8, nf4, gguf_q4km]               # embedders: fp16, int8 only
+
 model:
   name: null
   dtype: float16            # float16 | int8 | nf4  (RQ3)

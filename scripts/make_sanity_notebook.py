@@ -19,10 +19,10 @@ that each precision agrees with an **fp32 reference** on the same prompts.
 
 **Stability rule (fixed before running, in `dialectgap/sanity.py`):** stable ⇔ no non-finite logits **and** argmax agreement
 with fp32 ≥ 95% **and** mean 4-way KL < 0.01. We also check that batched (left-padded) scoring equals one-at-a-time scoring
-for every model (matters for the Mamba / Gated-DeltaNet hybrids).
+for every model (matters for Qwen3.5's Gated-DeltaNet layers).
 
 **Settings:** Accelerator **GPU T4 x2** (the fp32 reference of a ~4B model needs ~17 GB, so it is split across both GPUs),
-Internet on, Kaggle secret `HF_TOKEN` (Gemma / Falcon / FLORES+ terms accepted on huggingface.co).
+Internet on, Kaggle secret `HF_TOKEN` (Gemma / FLORES+ terms accepted on huggingface.co).
 Results are saved after each configuration, so a rerun resumes where it stopped."""),
 code("""REPO_URL = "https://github.com/<your-user>/dialect-gap-arabic.git"  # TODO: set after first push
 !git clone -q $REPO_URL || (cd dialect-gap-arabic && git pull -q)

@@ -11,7 +11,7 @@ from statistics import median
 
 from dialectgap import paths
 
-N_LLMS = 4
+N_LLMS = 3
 QUANT_FORMATS = ["fp16", "int8", "nf4", "gguf_q4km"]
 ASSUMED_TOK_PER_S = {"fp16": 2000, "int8": 500, "nf4": 1200, "gguf_q4km": 1500}  # batched prefill, 1×T4
 LOAD_OVERHEAD_H = 5 / 60          # download + load per (model, format, session)
@@ -19,6 +19,8 @@ GGUF_SETUP_H = 0.5                # build llama.cpp once + convert/quantize 4 mo
 GEN_TOK_PER_S = 200               # batched greedy generation, fp16, 1×T4 (assumed)
 DAMMLU_DOMAINS = 32
 DAMMLU_VARIETIES = 7
+WEEKLY_QUOTA_H = 30
+SAFETY = 0.5   # +50%: throughputs are assumed until measured, plus reruns
 
 
 def throughputs():
@@ -76,7 +78,7 @@ def main():
              "**Assumed values are placeholders until the sanity notebook measures them; rerun this script after.**", "",
              f"- Belebele, 8 varieties × 900: {bele_tokens/1e6:.2f}M prompt tokens per (model, format)",
              f"- DialectalArabicMMLU, 7 × 3,135: {dm_tokens_full/1e6:.2f}M prompt tokens per (model, format)", "",
-             "## RQ1 + RQ3 grid: 4 LLMs × {fp16, int8, nf4, GGUF Q4_K_M} × all varieties", "",
+             "## RQ1 + RQ3 grid: 3 LLMs × {fp16, int8, nf4, GGUF Q4_K_M} × all varieties", "",
              "| DA-MMLU size | fp16 | int8 | nf4 | GGUF | grid total | + RQ2 | + other | **total** |",
              "|---|---|---|---|---|---|---|---|---|"]
     for name, n in scenarios.items():
@@ -91,6 +93,18 @@ def main():
     for n in (900, 960, 1600, 3135):
         lines.append(f"| {n} | ±{196*math.sqrt(.05/n):.1f} pt | ±{196*math.sqrt(.10/n):.1f} pt | "
                      f"±{196*math.sqrt(.20/n):.1f} pt | ±{196*math.sqrt(.25/n):.1f} pt |")
+    # Quota fit: 30 GPU-h/week (user's Kaggle quota). Safety margin covers throughput uncertainty + reruns.
+    lines += ["", f"## Quota fit ({WEEKLY_QUOTA_H:.0f} GPU-h/week, +{int(SAFETY*100)}% safety margin)",
+              "Everything except the sanity notebook runs on a single T4. The sanity notebook uses T4×2; "
+              "if T4×2 is billed double it costs 2× its wall-clock (shown as the second number).", "",
+              "| DA-MMLU size | total (T4×2 billed 1×) | total (billed 2×) | with margin | weeks needed |", "|---|---|---|---|---|"]
+    sanity_h = other["sanity notebook (T4×2 wall-clock)"]
+    for name, n in scenarios.items():
+        _, tot = grid_hours(n)
+        t1 = tot + rq2_total + other_total
+        t2 = t1 + sanity_h
+        m = t2 * (1 + SAFETY)
+        lines.append(f"| {name} | {t1:.1f} | {t2:.1f} | {m:.1f} | {math.ceil(m / WEEKLY_QUOTA_H)} |")
     out = paths.REPORTS / "compute_estimate.md"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))

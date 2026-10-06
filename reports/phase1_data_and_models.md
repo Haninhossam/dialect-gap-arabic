@@ -34,7 +34,7 @@ The [FLORES-200 README](https://github.com/facebookresearch/flores/blob/main/flo
 | `google/gemma-3-4b-it` | 4.3B | Gemma terms | Multilingual baseline. It is in the DialectalArabicMMLU table, which gives us a **replication anchor** for our scoring pipeline |
 | `MBZUAI-Paris/Nile-Chat-4B` | ~4B (Gemma-3-4B base) | Gemma terms | Egyptian-adapted model on the **same base**, so we get a controlled comparison: does dialect adaptation shrink the gap, and does the gain survive quantization? |
 | `Qwen/Qwen3.5-4B` (Mar 2026) | 4B | Apache 2.0 | Newest strong multilingual small model ("201 languages and dialects"). Caveats: loads via `AutoModelForMultimodalLM`, thinking mode must be disabled, and its hybrid Gated-DeltaNet layers need a bitsandbytes compatibility smoke test. Fallback: Qwen3.5-2B |
-| `tiiuae/Falcon-H1-Arabic-3B` (instruct) | 3B | Falcon LLM License (permissive, not Apache) | Newest Arabic-centric small model. Hybrid Mamba, so it also needs a quantization smoke test. Fallback: Falcon-H1-3B-Instruct (also in the DialectalArabicMMLU table) |
+| ~~`tiiuae/Falcon-H1-Arabic-3B`~~ **dropped 2026-10-06** (gated repo, ID unconfirmed) | 3B | Falcon LLM License (permissive, not Apache) | Newest Arabic-centric small model. Hybrid Mamba, so it also needs a quantization smoke test. Fallback: Falcon-H1-3B-Instruct (also in the DialectalArabicMMLU table) |
 
 Not chosen: Gemma 4 E4B (8B total parameters with per-layer embeddings, no fp16 fit). Jais-2-8B and ALLaM-7B (no fp16 fit). Gemma 4 E2B (5.1B total) is a possible swap-in.
 

@@ -5,12 +5,11 @@ import torch
 import transformers
 from transformers import AutoTokenizer, BitsAndBytesConfig
 
-# Short names used in configs -> HF ids. Falcon-H1-Arabic id must be confirmed after HF login (repo is gated).
+# Short names used in configs -> HF ids (3 LLMs; Falcon-H1-Arabic dropped 2026-10-06, see reports/phase1_data_and_models.md).
 LLMS = {
     "gemma3-4b": "google/gemma-3-4b-it",
     "nilechat-4b": "MBZUAI-Paris/Nile-Chat-4B",
     "qwen3.5-4b": "Qwen/Qwen3.5-4B",
-    "falcon-h1-ar-3b": "tiiuae/Falcon-H1-Arabic-3B-Instruct",
 }
 
 _DTYPES = {"fp32": torch.float32, "fp16": torch.float16, "bf16": torch.bfloat16}

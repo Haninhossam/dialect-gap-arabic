@@ -7,13 +7,13 @@ Throughputs below are fp16: 2000 tok/s (assumed), int8: 500 tok/s (assumed), nf4
 - Belebele, 8 varieties × 900: 1.64M prompt tokens per (model, format)
 - DialectalArabicMMLU, 7 × 3,135: 3.02M prompt tokens per (model, format)
 
-## RQ1 + RQ3 grid: 4 LLMs × {fp16, int8, nf4, GGUF Q4_K_M} × all varieties
+## RQ1 + RQ3 grid: 3 LLMs × {fp16, int8, nf4, GGUF Q4_K_M} × all varieties
 
 | DA-MMLU size | fp16 | int8 | nf4 | GGUF | grid total | + RQ2 | + other | **total** |
 |---|---|---|---|---|---|---|---|---|
-| Full DA-MMLU (3,135 items) | 2.9 | 10.7 | 4.7 | 3.8 | 22.6 | 7.2 | 1.8 | **31.6** |
-| Stratified 50/domain (1,600 items) | 2.1 | 7.4 | 3.3 | 2.7 | 16.0 | 7.2 | 1.8 | **25.0** |
-| Stratified 30/domain (960 items) | 1.8 | 6.0 | 2.7 | 2.2 | 13.2 | 7.2 | 1.8 | **22.2** |
+| Full DA-MMLU (3,135 items) | 2.2 | 8.0 | 3.5 | 2.8 | 17.0 | 7.2 | 1.8 | **26.0** |
+| Stratified 50/domain (1,600 items) | 1.6 | 5.6 | 2.5 | 2.0 | 12.1 | 7.2 | 1.8 | **21.1** |
+| Stratified 30/domain (960 items) | 1.3 | 4.5 | 2.0 | 1.7 | 10.1 | 7.2 | 1.8 | **19.1** |
 
 ## RQ2 and other items
 
@@ -33,3 +33,12 @@ Throughputs below are fp16: 2000 tok/s (assumed), int8: 500 tok/s (assumed), nf4
 | 960 | ±1.4 pt | ±2.0 pt | ±2.8 pt | ±3.2 pt |
 | 1600 | ±1.1 pt | ±1.5 pt | ±2.2 pt | ±2.5 pt |
 | 3135 | ±0.8 pt | ±1.1 pt | ±1.6 pt | ±1.8 pt |
+
+## Quota fit (30 GPU-h/week, +50% safety margin)
+Everything except the sanity notebook runs on a single T4. The sanity notebook uses T4×2; if T4×2 is billed double it costs 2× its wall-clock (shown as the second number).
+
+| DA-MMLU size | total (T4×2 billed 1×) | total (billed 2×) | with margin | weeks needed |
+|---|---|---|---|---|
+| Full DA-MMLU (3,135 items) | 26.0 | 27.5 | 41.3 | 2 |
+| Stratified 50/domain (1,600 items) | 21.1 | 22.6 | 33.9 | 2 |
+| Stratified 30/domain (960 items) | 19.1 | 20.6 | 30.8 | 2 |
