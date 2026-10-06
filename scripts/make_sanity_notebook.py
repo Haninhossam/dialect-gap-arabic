@@ -1,6 +1,10 @@
 """Generates notebooks/01_sanity_precision.ipynb (kept as code so the notebook is reviewable in diffs)."""
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _gguf_cells import gguf_cells  # noqa: E402
 
 
 def md(s):
@@ -138,35 +142,7 @@ for short, mid in EMB.items():
         'R@1_fp32_arz->eng_100': float((res['fp32'].argmax(1) == np.arange(len(keys))).mean()) if ok else None,
         'error': '' if ok else str([r for r in res.values() if isinstance(r, str)])[:200]})
 emb_summary = pd.DataFrame(emb_rows); emb_summary.to_csv(f'{OUT}/embedding_summary.csv', index=False); emb_summary"""),
-md("""## GGUF Q4_K_M feasibility (edge format), Gemma-3-4B only
-Builds llama.cpp with CUDA, converts the HF checkpoint to GGUF, quantizes to Q4_K_M, then scores the same 24 prompts with
-llama-cpp-python on GPU, plus 8 prompts on CPU only (edge-like latency). Steps are timed to know the per-session overhead."""),
-code("""%%time
-!git clone -q --depth 1 https://github.com/ggml-org/llama.cpp /kaggle/working/llama.cpp
-!cmake -S /kaggle/working/llama.cpp -B /kaggle/working/llama.cpp/build -DGGML_CUDA=ON -DLLAMA_CURL=OFF > /dev/null
-!cmake --build /kaggle/working/llama.cpp/build --config Release -j 4 --target llama-quantize > /dev/null
-!pip install -q -r /kaggle/working/llama.cpp/requirements/requirements-convert_hf_to_gguf.txt"""),
-code("""%%time
-from huggingface_hub import snapshot_download
-src = snapshot_download(LLMS['gemma3-4b'])
-GG = '/kaggle/working/gguf'; os.makedirs(GG, exist_ok=True)
-!python /kaggle/working/llama.cpp/convert_hf_to_gguf.py {src} --outtype f16 --outfile {GG}/gemma3-4b-f16.gguf
-!/kaggle/working/llama.cpp/build/bin/llama-quantize {GG}/gemma3-4b-f16.gguf {GG}/gemma3-4b-Q4_K_M.gguf Q4_K_M"""),
-code("""%%time
-!CMAKE_ARGS="-DGGML_CUDA=on" pip install -q llama-cpp-python"""),
-code("""from dialectgap.gguf import load_gguf, score_mcq_gguf
-from dialectgap.scoring import compare_runs
-ref = from_jsonable(json.load(open(path('gemma3-4b', 'fp32'))))['single']
-gg = {}
-for name, ngl, ps in [('gpu', -1, prompts), ('cpu', 0, prompts[:8])]:
-    try:
-        llm = load_gguf(f'{GG}/gemma3-4b-Q4_K_M.gguf', n_gpu_layers=ngl, n_threads=os.cpu_count())
-        r = score_mcq_gguf(llm, ps); del llm
-        sub = {k: v[:len(ps)] for k, v in ref.items() if k != 'seconds'}
-        gg[name] = {**compare_runs(sub, r), 'tok_per_s': float(r['n_tokens'].sum() / r['seconds']), 'ok': True}
-    except Exception as ex:
-        gg[name] = {'ok': False, 'error': f'{type(ex).__name__}: {ex}'}
-json.dump(gg, open(f'{OUT}/gguf_gemma3-4b_Q4_K_M.json', 'w')); gg"""),
+*gguf_cells(md, code),
 md("## Report (copy this cell's output back if downloading the zip is inconvenient)"),
 code("""import platform, bitsandbytes, sentence_transformers
 print('ENV', platform.python_version(), 'torch', torch.__version__, 'transformers', transformers.__version__,
