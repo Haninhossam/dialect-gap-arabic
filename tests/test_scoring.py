@@ -69,3 +69,34 @@ def test_belebele_aligned_pairs_by_uid():
         pytest.skip(str(e))
     assert [it["uid"] for it in al["eng_Latn"]] == [it["uid"] for it in al["arz_Arab"]]
     assert len(al["arz_Arab"]) == 900
+
+
+def test_formats_and_letter_variants(tiny):
+    from dialectgap.prompts import FORMATS, format_prompt
+    from dialectgap.scoring import letter_mass, score_mcq
+    from dialectgap.sanity import run_precision, validity
+    model, tok = tiny
+    p = build_mcq_prompt(ITEM)
+    assert format_prompt(p, tok, "raw") == p
+    assert format_prompt(p, tok, "raw_prefill_nothink").endswith("<think>\n\n</think>\n\n")
+    r = score_mcq(model, tok, [p], batch_size=1, **FORMATS["raw_prefill_nothink"])
+    np.testing.assert_array_equal(r["logprobs"], r["logprobs_nospace"])
+    assert 0 < letter_mass(r["logprobs_space"])[0] <= 1
+    rec = run_precision("hf-internal-testing/tiny-random-LlamaForCausalLM", "fp32", [p] * 2, [p],
+                        batch_size=2, fmt="raw_prefill_nothink")
+    assert rec["ok"] and rec["format"] == "raw_prefill_nothink"
+    v = validity(rec)
+    assert v["finite"] and set(v) >= {"valid", "median_letter_mass", "generations_nonempty"}
+
+
+def test_qwen_chat_nothink_template():
+    transformers = pytest.importorskip("transformers")
+    from dialectgap.prompts import format_prompt
+    from dialectgap.scoring import letter_token_ids
+    try:
+        tok = transformers.AutoTokenizer.from_pretrained("Qwen/Qwen3.5-4B")
+    except OSError:
+        pytest.skip("no network")
+    s = format_prompt(build_mcq_prompt(ITEM), tok, "chat_nothink")
+    assert s.endswith("<|im_start|>assistant\n<think>\n\n</think>\n\n")
+    assert letter_token_ids(tok, "") != letter_token_ids(tok, " ")
