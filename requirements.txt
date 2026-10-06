@@ -1,7 +1,7 @@
 # Version ranges chosen to coexist with Kaggle/Colab preinstalled torch.
 # Exact versions of every run are captured via `pip freeze` in results/runs.jsonl.
 torch>=2.1
-transformers>=4.44,<5
+transformers>=5.0             # Qwen3.5 / Gemma-3 multimodal checkpoints
 datasets>=2.20
 accelerate>=0.33
 bitsandbytes>=0.43        # 8-bit / 4-bit quantization (RQ3)
