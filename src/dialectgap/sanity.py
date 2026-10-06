@@ -21,16 +21,32 @@ STABLE_MAX_KL = 0.01
 VALID_MIN_LETTER_MASS = 0.05
 
 
-def _peak_mem_gb() -> float:
+def _cuda_ready() -> bool:
+    """Initialise CUDA explicitly: memory-stat calls raise 'Invalid device argument' before CUDA is initialised."""
     if not torch.cuda.is_available():
+        return False
+    torch.cuda.init()
+    return True
+
+
+def _peak_mem_gb() -> float:
+    """Peak allocated GPU memory summed over devices; NaN if unavailable (never raises)."""
+    try:
+        if not _cuda_ready():
+            return float("nan")
+        return sum(torch.cuda.max_memory_allocated(i) for i in range(torch.cuda.device_count())) / 1e9
+    except RuntimeError:
         return float("nan")
-    return sum(torch.cuda.max_memory_allocated(i) for i in range(torch.cuda.device_count())) / 1e9
 
 
 def _reset_peak():
-    if torch.cuda.is_available():
-        for i in range(torch.cuda.device_count()):
-            torch.cuda.reset_peak_memory_stats(i)
+    """Best effort: a failing memory-stat call must never abort a run."""
+    try:
+        if _cuda_ready():
+            for i in range(torch.cuda.device_count()):
+                torch.cuda.reset_peak_memory_stats(i)
+    except RuntimeError as e:
+        print("warning: could not reset CUDA peak-memory stats:", e)
 
 
 @torch.no_grad()

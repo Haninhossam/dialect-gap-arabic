@@ -1,0 +1,21 @@
+{
+ "model": "Qwen/Qwen3.5-4B",
+ "format": "gguf_q4km",
+ "build_backend": "cpu",
+ "gpu_offload": false,
+ "llama_cpp_python": "0.3.36",
+ "size_gb": 2.783446944,
+ "cpu": {
+  "n": 8,
+  "n_nonfinite_test": 0,
+  "argmax_agreement": 0.375,
+  "max_abs_logprob_diff": 11.187861442565918,
+  "mean_kl_4way": 0.9639573097229004,
+  "sec_per_prompt": 10.374061865499982,
+  "tok_per_s": 19.12221100779403,
+  "median_letter_mass": 1.6108241116404067e-05,
+  "finite": true,
+  "acc": 0.375
+ },
+ "ok": true
+}

@@ -59,7 +59,9 @@ subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'diskcache', 'jinj
 print('llama-cpp-python backend:', GGUF_BACKEND)"""),
 code("""from dialectgap.gguf import load_gguf, score_mcq_gguf
 from dialectgap.scoring import compare_runs
+from transformers import AutoTokenizer
 import llama_cpp
+tok = AutoTokenizer.from_pretrained(LLMS['gemma3-4b'])  # same ids for HF and GGUF
 gpu_ok = bool(llama_cpp.llama_supports_gpu_offload())
 print('llama.cpp GPU offload supported:', gpu_ok)
 ref = from_jsonable(json.load(open(path('gemma3-4b', 'fp32'))))['single']
@@ -68,7 +70,7 @@ runs = [('cpu_8prompts', 0, prompts[:8])] + ([('gpu_24prompts', -1, prompts)] if
 for name, ngl, ps in runs:
     try:
         llm = load_gguf(q4, n_gpu_layers=ngl, n_threads=os.cpu_count())
-        r = score_mcq_gguf(llm, ps); del llm
+        r = score_mcq_gguf(llm, tok, ps); del llm
         sub = {k: v[:len(ps)] for k, v in ref.items() if k != 'seconds'}
         gg[name] = {**compare_runs(sub, r), 'tok_per_s': float(r['n_tokens'].sum() / r['seconds']),
                     'sec_per_prompt': float(r['seconds'] / len(ps)), 'ok': True}

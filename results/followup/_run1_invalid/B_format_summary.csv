@@ -1,0 +1,11 @@
+model,prec,format,error
+qwen3.5-4b,fp32,raw,RuntimeError: Invalid device argument 
+qwen3.5-4b,fp32,chat_nothink,RuntimeError: Invalid device argument 
+qwen3.5-4b,fp32,raw_prefill_nothink,RuntimeError: Invalid device argument 
+qwen3.5-4b,fp16,raw,RuntimeError: Invalid device argument 
+qwen3.5-4b,fp16,chat_nothink,RuntimeError: Invalid device argument 
+qwen3.5-4b,fp16,raw_prefill_nothink,RuntimeError: Invalid device argument 
+gemma3-4b,fp32,raw,RuntimeError: Invalid device argument 
+gemma3-4b,fp32,chat_nothink,RuntimeError: Invalid device argument 
+nilechat-4b,fp32,raw,RuntimeError: Invalid device argument 
+nilechat-4b,fp32,chat_nothink,RuntimeError: Invalid device argument 

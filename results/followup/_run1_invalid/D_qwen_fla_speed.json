@@ -1,0 +1,6 @@
+{
+ "pip_ok": true,
+ "pip_err": "",
+ "stdout": "{\"ok\": false, \"tok_per_s\": null, \"error\": \"RuntimeError: Invalid device argument \"}\n",
+ "stderr": ""
+}

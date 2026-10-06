@@ -1,6 +1,10 @@
 """Generates notebooks/02_sanity_followup.ipynb."""
 import json
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _followup_gguf_cells import gguf_cells  # noqa: E402
 
 
 def md(s):
@@ -39,7 +43,8 @@ import json, glob, shutil, subprocess, torch, transformers
 import numpy as np, pandas as pd
 from dialectgap.env import load_hf_token
 load_hf_token()
-print('torch', torch.__version__, '| transformers', transformers.__version__, '| GPUs', torch.cuda.device_count())
+print('torch', torch.__version__, '| transformers', transformers.__version__,
+      '| GPUs', [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())])
 OUT = '/kaggle/working/followup' if os.path.exists('/kaggle') else 'results/followup'
 os.makedirs(OUT, exist_ok=True)
 REF = 'results/sanity'
@@ -108,83 +113,7 @@ for m, prec, fmt in FMT_RUNS:
     rows.append(row)
 fmt_summary = pd.DataFrame(rows); fmt_summary.to_csv(f'{OUT}/B_format_summary.csv', index=False)
 pd.set_option('display.width', 250); fmt_summary"""),
-md("""## C. GGUF Q4_K_M for all 3 models
-`llama-quantize` is built CPU-only. Only `gguf-py` is installed: llama.cpp's convert requirements pin a CPU-only torch.
-llama-cpp-python is built for the T4 (sm_75), with a CPU fallback; the backend actually used is recorded.
-Scoring uses the **raw** format, so it is comparable to the run-1 fp32 references."""),
-code("""%%time
-LC = '/kaggle/working/llama.cpp'
-if not os.path.exists(LC):
-    subprocess.run(['git', 'clone', '-q', '--depth', '1', 'https://github.com/ggml-org/llama.cpp', LC], check=True)
-QUANTIZE = f'{LC}/build-cpu/bin/llama-quantize'
-if not os.path.exists(QUANTIZE):
-    subprocess.run(['cmake', '-S', LC, '-B', f'{LC}/build-cpu', '-DGGML_CUDA=OFF', '-DLLAMA_CURL=OFF',
-                    '-DCMAKE_BUILD_TYPE=Release'], check=True, capture_output=True)
-    subprocess.run(['cmake', '--build', f'{LC}/build-cpu', '--config', 'Release', '-j', '4', '--target', 'llama-quantize'],
-                   check=True, capture_output=True)
-subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', f'{LC}/gguf-py', 'sentencepiece'], check=True)
-print('llama-quantize:', os.path.exists(QUANTIZE), '| torch still', torch.__version__, torch.cuda.is_available())
-print(subprocess.run(['git', '-C', LC, 'log', '-1', '--format=%h %cd'], capture_output=True, text=True).stdout)"""),
-code("""%%time
-try:
-    import llama_cpp; GGUF_BACKEND = 'preinstalled'
-except ImportError:
-    nvcc = shutil.which('nvcc') or '/usr/local/cuda/bin/nvcc'
-    cuda_root = os.path.dirname(os.path.dirname(os.path.realpath(nvcc)))
-    stubs = f'{cuda_root}/lib64/stubs'
-    print('nvcc:', nvcc, '| CUDA root:', cuda_root, '| driver stub present:', os.path.exists(f'{stubs}/libcuda.so'))
-    cuda_args = (f'-DGGML_CUDA=on -DCMAKE_CUDA_ARCHITECTURES=75 -DCUDAToolkit_ROOT={cuda_root} '
-                 f'-DCMAKE_CUDA_COMPILER={nvcc} -DCMAKE_LIBRARY_PATH={stubs}')
-    pip_cmd = [sys.executable, '-m', 'pip', 'install', '-q', '--no-cache-dir', '--no-deps', 'llama-cpp-python']
-    r = subprocess.run(pip_cmd, env=dict(os.environ, CMAKE_ARGS=cuda_args, FORCE_CMAKE='1',
-                       LIBRARY_PATH=stubs + ':' + os.environ.get('LIBRARY_PATH', '')), capture_output=True, text=True)
-    GGUF_BACKEND = 'cuda' if r.returncode == 0 else None
-    if GGUF_BACKEND is None:
-        print('CUDA build failed (tail):\\n', r.stderr[-2500:])
-        r = subprocess.run(pip_cmd, env=dict(os.environ, CMAKE_ARGS='-DGGML_CUDA=off', FORCE_CMAKE='1'),
-                           capture_output=True, text=True)
-        GGUF_BACKEND = 'cpu' if r.returncode == 0 else None
-        if GGUF_BACKEND is None: print('CPU build failed too:\\n', r.stderr[-2500:])
-    subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'diskcache', 'jinja2'], check=False)
-import llama_cpp
-GPU_OK = bool(llama_cpp.llama_supports_gpu_offload())
-print('llama-cpp-python', llama_cpp.__version__, '| build:', GGUF_BACKEND, '| GPU offload:', GPU_OK)"""),
-code("""from huggingface_hub import snapshot_download, scan_cache_dir
-from dialectgap.gguf import load_gguf, score_mcq_gguf
-GG = '/kaggle/working/gguf'; os.makedirs(GG, exist_ok=True)
-for m, mid in LLMS.items():
-    name = f'C_{m}__gguf_q4km'
-    if done(name): print('skip', name); continue
-    rec = {'model': mid, 'format': 'gguf_q4km', 'build_backend': GGUF_BACKEND, 'gpu_offload': GPU_OK,
-           'llama_cpp_python': llama_cpp.__version__}
-    q4 = f'{GG}/{m}-Q4_K_M.gguf'
-    try:
-        if not os.path.exists(q4):
-            src = snapshot_download(mid)
-            f16 = f'/tmp/{m}-f16.gguf'   # large intermediate: keep it out of /kaggle/working (20 GB limit)
-            r = subprocess.run([sys.executable, f'{LC}/convert_hf_to_gguf.py', src, '--outtype', 'f16', '--outfile', f16],
-                               capture_output=True, text=True)
-            if r.returncode != 0: raise RuntimeError('convert failed: ' + r.stderr[-1500:])
-            r = subprocess.run([QUANTIZE, f16, q4, 'Q4_K_M'], capture_output=True, text=True)
-            if r.returncode != 0: raise RuntimeError('quantize failed: ' + r.stderr[-1500:])
-            os.remove(f16)
-            info = scan_cache_dir(); info.delete_revisions(*[rv.commit_hash for rp in info.repos if rp.repo_id == mid for rv in rp.revisions]).execute()
-        rec['size_gb'] = os.path.getsize(q4) / 1e9
-        for label, ngl, ps in [('gpu', -1, P24), ('cpu', 0, P24[:8])]:
-            if label == 'gpu' and not GPU_OK: continue
-            llm = load_gguf(q4, n_gpu_layers=ngl, n_threads=os.cpu_count())
-            r = score_mcq_gguf(llm, ps); del llm
-            sub = {k: v[:len(ps)] for k, v in ref[m]['single'].items() if k != 'seconds'}
-            rec[label] = {**compare_runs(sub, r), 'sec_per_prompt': r['seconds'] / len(ps),
-                          'tok_per_s': float(r['n_tokens'].sum() / r['seconds']),
-                          'median_letter_mass': float(np.median(letter_mass(r['logprobs']))),
-                          'finite': bool(np.isfinite(r['logprobs']).all()),
-                          'acc': float((r['logprobs'].argmax(1) == G24[:len(ps)]).mean())}
-        rec['ok'] = True
-    except Exception as ex:
-        rec.update(ok=False, error=f'{type(ex).__name__}: {ex}'[:3000])
-    save(name, rec); print(name, json.dumps(rec, indent=1)[:1500])
-!df -h /kaggle/working /tmp | tail -2"""),
+*gguf_cells(md, code),
 md("""## D. Qwen3.5 speed with flash-linear-attention (optional)
 Run in a fresh Python process, because transformers checks for the kernels when it is imported. If the install fails, this is recorded and skipped."""),
 code("""name = 'D_qwen_fla_speed'
@@ -215,6 +144,7 @@ for p in sorted(glob.glob(f'{OUT}/A_*.json')):
                                   'tok/s', r.get('tokens_per_second_batched'), 'GB', r.get('peak_mem_gb'), r.get('error', '')[:200])
 print('\\n=== B: prompt formats ==='); print(fmt_summary.to_csv(index=False))
 print('=== C: GGUF ===')
+print(open(f'{OUT}/C_build_log.json').read()[:3000] if done('C_build_log') else 'no build log')
 for p in sorted(glob.glob(f'{OUT}/C_*.json')): print(json.dumps(json.load(open(p)))[:1500])
 print('\\n=== D ==='); print(open(f'{OUT}/D_qwen_fla_speed.json').read()[-1200:] if done('D_qwen_fla_speed') else 'not run')"""),
 md("## Save\nDownload `followup.zip` from the Output tab and unzip it into `results/followup/` in the repo."),

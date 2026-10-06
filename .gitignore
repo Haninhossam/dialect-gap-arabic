@@ -25,3 +25,6 @@ venv/
 .env
 wandb/
 .DS_Store
+
+# downloaded Kaggle archives (contents are unzipped into results/)
+*.zip

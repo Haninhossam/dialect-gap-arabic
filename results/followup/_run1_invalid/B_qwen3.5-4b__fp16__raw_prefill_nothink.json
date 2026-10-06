@@ -1,0 +1,8 @@
+{
+ "model": "Qwen/Qwen3.5-4B",
+ "precision": "fp16",
+ "compute_dtype": "fp16",
+ "format": "raw_prefill_nothink",
+ "ok": false,
+ "error": "RuntimeError: Invalid device argument "
+}

@@ -1,0 +1,12 @@
+{
+ "model": "google/gemma-3-4b-it",
+ "precision": "int8",
+ "compute_dtype": "fp32",
+ "format": "raw",
+ "ok": false,
+ "error": "RuntimeError: Invalid device argument ",
+ "validity": {
+  "valid": false,
+  "reason": "RuntimeError: Invalid device argument "
+ }
+}

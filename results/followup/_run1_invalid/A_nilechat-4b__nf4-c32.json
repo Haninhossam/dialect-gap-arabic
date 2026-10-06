@@ -1,0 +1,12 @@
+{
+ "model": "MBZUAI-Paris/Nile-Chat-4B",
+ "precision": "nf4",
+ "compute_dtype": "fp32",
+ "format": "raw",
+ "ok": false,
+ "error": "RuntimeError: Invalid device argument ",
+ "validity": {
+  "valid": false,
+  "reason": "RuntimeError: Invalid device argument "
+ }
+}
