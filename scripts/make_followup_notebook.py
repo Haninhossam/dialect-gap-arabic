@@ -27,6 +27,10 @@ This notebook answers the open questions before the main runs:
 - **C.** GGUF Q4_K_M for all 3 models (llama.cpp): conversion, validity, GPU speed, CPU-only latency.
 - **D.** Qwen3.5 speed with the `flash-linear-attention` kernels (optional).
 
+**Memory safety (after follow-up run 2 was killed for lack of RAM):** every model configuration runs in its own process
+(`scripts/run_one.py` via `dialectgap.isolate.run_isolated`), so memory is fully released between configurations. A child that is
+killed (out of RAM, timeout) is recorded as a failed run and the notebook continues. `progress.log` records RAM after each step.
+
 Validity rule for quantized formats (`dialectgap/sanity.py`): finite logits, median letter mass ≥ 0.05, non-empty greedy text.
 fp32 references come from run 1 (`results/sanity/*__fp32.json`, committed in the repo).
 
@@ -48,8 +52,16 @@ print('torch', torch.__version__, '| transformers', transformers.__version__,
 OUT = '/kaggle/working/followup' if os.path.exists('/kaggle') else 'results/followup'
 os.makedirs(OUT, exist_ok=True)
 REF = 'results/sanity'
+LOG = f'{OUT}/progress.log'   # one line per configuration: ok, wall time, peak RAM, RAM left
 def save(name, obj): json.dump(obj, open(f'{OUT}/{name}.json', 'w'), ensure_ascii=False, indent=1)
-def done(name): return os.path.exists(f'{OUT}/{name}.json')"""),
+def done(name):
+    # finished = file exists and (if it is a run record) the run succeeded; failed runs are retried on rerun
+    p = f'{OUT}/{name}.json'
+    if not os.path.exists(p): return False
+    obj = json.load(open(p))
+    return not isinstance(obj, dict) or obj.get('ok', True)
+from dialectgap.isolate import run_isolated, mem_available_gb
+print(f'RAM available at start: {mem_available_gb():.1f} GB')"""),
 md("""## Prompts
 - **SANITY-24**: the same 24 prompts as run 1 (8 uids × eng/arb/arz), used to compare against the run-1 fp32 references.
 - **FORMAT-DEV-300**: the first 100 uids (sorted) × eng/arb/arz. Used **only** to choose the prompt format. The choice rests
@@ -78,7 +90,7 @@ code("""for m in ['gemma3-4b', 'nilechat-4b']:
         name = f'A_{m}__{prec}-c32'
         if done(name): print('skip', name); continue
         print('running', name, flush=True)
-        rec = run_precision(LLMS[m], prec, P24, GEN, compute_dtype='fp32')
+        rec = run_isolated(LLMS[m], prec, P24, GEN, f'{OUT}/{name}.json', compute_dtype='fp32', log_path=LOG)
         rec['validity'] = validity(rec)
         if rec['ok']:
             rec['vs_fp32'] = compare_runs(ref[m]['single'], rec['single'])
@@ -94,8 +106,8 @@ for m, prec, fmt in FMT_RUNS:
     name = f'B_{m}__{prec}__{fmt}'
     if done(name): print('skip', name); continue
     print('running', name, flush=True)
-    rec = run_precision(LLMS[m], prec, P300, [GEN[0]], compute_dtype=prec, batch_size=8, fmt=fmt, check_batching=False)
-    save(name, to_jsonable(rec))
+    rec = run_isolated(LLMS[m], prec, P300, [GEN[0]], f'{OUT}/{name}.json', compute_dtype=prec, batch_size=8,
+                       fmt=fmt, check_batching=False, log_path=LOG)
     print('   ok' if rec['ok'] else '   FAILED ' + rec['error'][:300])"""),
 code("""rows = []
 for m, prec, fmt in FMT_RUNS:
@@ -138,6 +150,7 @@ md("## Report (copy this output back if downloading the zip is inconvenient)"),
 code("""import platform, bitsandbytes
 print('ENV', platform.python_version(), 'torch', torch.__version__, 'transformers', transformers.__version__,
       'bitsandbytes', bitsandbytes.__version__, 'GPUs', [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())])
+print(open(LOG).read() if os.path.exists(LOG) else 'no progress.log')
 print('\\n=== A: Gemma family quantized with fp32 compute ===')
 for p in sorted(glob.glob(f'{OUT}/A_*.json')):
     r = json.load(open(p)); print(os.path.basename(p), r.get('validity'), r.get('vs_fp32'), 'acc', r.get('acc'),
