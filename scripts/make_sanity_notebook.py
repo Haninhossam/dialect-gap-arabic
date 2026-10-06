@@ -22,7 +22,7 @@ with fp32 ≥ 95% **and** mean 4-way KL < 0.01. We also check that batched (left
 for every model (matters for Qwen3.5's Gated-DeltaNet layers).
 
 **Settings:** Accelerator **GPU T4 x2** (the fp32 reference of a ~4B model needs ~17 GB, so it is split across both GPUs),
-Internet on, Kaggle secret `HF_TOKEN` (Gemma / FLORES+ terms accepted on huggingface.co).
+Internet on, Kaggle secret **`Kaggle_Token`** holding your Hugging Face token (Gemma / FLORES+ terms accepted on huggingface.co).
 Results are saved after each configuration, so a rerun resumes where it stopped."""),
 code("""REPO_URL = "https://github.com/<your-user>/dialect-gap-arabic.git"  # TODO: set after first push
 !git clone -q $REPO_URL || (cd dialect-gap-arabic && git pull -q)
@@ -30,11 +30,8 @@ code("""REPO_URL = "https://github.com/<your-user>/dialect-gap-arabic.git"  # TO
 !pip install -q -U "transformers>=5.0" accelerate bitsandbytes sentence-transformers && pip install -q -e ."""),
 code("""import os, json, glob, torch, transformers
 import numpy as np, pandas as pd
-try:
-    from kaggle_secrets import UserSecretsClient
-    os.environ['HF_TOKEN'] = UserSecretsClient().get_secret('HF_TOKEN')
-except Exception as e:
-    print('No Kaggle secret loaded:', e)
+from dialectgap.env import load_hf_token
+load_hf_token()   # reads Kaggle secret 'Kaggle_Token' (or 'HF_TOKEN'), verifies it and Gemma access
 print('torch', torch.__version__, '| transformers', transformers.__version__)
 for i in range(torch.cuda.device_count()):
     p = torch.cuda.get_device_properties(i); print(i, p.name, f'{p.total_memory/1e9:.1f} GB')

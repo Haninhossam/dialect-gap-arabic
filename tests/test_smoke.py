@@ -35,3 +35,13 @@ def test_log_run_writes_both_logs(tmp_path):
     assert rec["data_version"] == data_version([split])
     assert "smoke" in md.read_text(encoding="utf-8")
     assert jl.read_text(encoding="utf-8").count("\n") == 1
+
+
+def test_load_hf_token_rejects_non_hf_value(monkeypatch):
+    import pytest
+    from dialectgap.env import load_hf_token
+    monkeypatch.setenv("HF_TOKEN", "not-a-token")
+    with pytest.raises(ValueError):
+        load_hf_token()
+    monkeypatch.delenv("HF_TOKEN")
+    assert load_hf_token() is None  # no Kaggle client locally, no env var -> None, no crash
