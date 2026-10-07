@@ -36,6 +36,8 @@ def pip_try(name, args, env=None):
     build_log[name]['probe'] = (probe.stdout + probe.stderr)[-1500:]
     return probe.returncode == 0 and probe.stdout.strip().endswith('True')
 
+# runtime deps first: the run-3 probes failed only because diskcache was missing (installed after the tiers)
+subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'diskcache', 'jinja2', 'typing-extensions'], check=True)
 GGUF_BACKEND = None
 # 1) prebuilt CUDA 12.4 wheel (same 0.3.36 release that loaded Qwen3.5 in run 1)
 if pip_try('prebuilt_cu124', ['llama-cpp-python==0.3.36', '--only-binary=:all:',
@@ -56,7 +58,6 @@ if GGUF_BACKEND is None:
 if GGUF_BACKEND is None:
     pip_try('cpu_build', ['llama-cpp-python==0.3.36'], env=dict(os.environ, CMAKE_ARGS='-DGGML_CUDA=off', FORCE_CMAKE='1'))
     GGUF_BACKEND = 'cpu' if build_log['cpu_build']['ok'] else None
-subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'diskcache', 'jinja2'], check=False)
 build_log['backend'] = GGUF_BACKEND
 save('C_build_log', build_log)
 print('llama-cpp-python backend:', GGUF_BACKEND)

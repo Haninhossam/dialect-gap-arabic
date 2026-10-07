@@ -1,0 +1,22 @@
+{
+ "model": "Qwen/Qwen3.5-4B",
+ "format": "gguf_q4km",
+ "backend": "cpu",
+ "gpu_offload": false,
+ "llama_cpp_python": "0.3.36",
+ "llama_cpp_commit_converter": "43fe9c6 Tue Oct 6 07:41:57 2026 +0200",
+ "size_gb": 2.783446944,
+ "cpu": {
+  "n": 8,
+  "n_nonfinite_test": 0,
+  "argmax_agreement": 0.875,
+  "max_abs_logprob_diff": 1.3006153106689453,
+  "mean_kl_4way": 0.015769314020872116,
+  "sec_per_prompt": 9.091065332249968,
+  "tok_per_s": 21.820874974495837,
+  "median_letter_mass": 0.23780762792254584,
+  "valid": true,
+  "acc": 0.875
+ },
+ "ok": true
+}

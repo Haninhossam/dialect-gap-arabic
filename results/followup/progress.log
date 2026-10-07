@@ -1,0 +1,14 @@
+06:28:23 A_gemma3-4b__nf4-c32 ok=True wall=125s peak_rss=9.9GB mem_avail_after=30.9GB 
+06:29:37 A_gemma3-4b__int8-c32 ok=True wall=74s peak_rss=9.8GB mem_avail_after=30.9GB 
+06:31:38 A_nilechat-4b__nf4-c32 ok=True wall=121s peak_rss=9.2GB mem_avail_after=30.9GB 
+06:32:54 A_nilechat-4b__int8-c32 ok=True wall=76s peak_rss=9.1GB mem_avail_after=31.0GB 
+06:34:46 B_qwen3.5-4b__fp32__raw ok=False wall=112s peak_rss=9.8GB mem_avail_after=31.0GB OutOfMemoryError: CUDA out of memory. Tried to allocate 1.91 GiB. GPU 0 has a total capacity of 14.56 GiB of which 390.8
+06:35:30 B_qwen3.5-4b__fp32__chat_nothink ok=False wall=44s peak_rss=9.7GB mem_avail_after=30.8GB OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 14.56 GiB of which 254.8
+06:36:15 B_qwen3.5-4b__fp32__raw_prefill_nothink ok=False wall=45s peak_rss=9.8GB mem_avail_after=31.0GB OutOfMemoryError: CUDA out of memory. Tried to allocate 1.95 GiB. GPU 0 has a total capacity of 14.56 GiB of which 358.8
+06:37:53 B_qwen3.5-4b__fp16__raw ok=True wall=98s peak_rss=9.6GB mem_avail_after=30.9GB 
+06:39:28 B_qwen3.5-4b__fp16__chat_nothink ok=True wall=95s peak_rss=9.7GB mem_avail_after=30.9GB 
+06:41:01 B_qwen3.5-4b__fp16__raw_prefill_nothink ok=True wall=93s peak_rss=9.7GB mem_avail_after=31.0GB 
+06:42:04 B_gemma3-4b__fp32__raw ok=False wall=63s peak_rss=6.0GB mem_avail_after=31.0GB OutOfMemoryError: CUDA out of memory. Tried to allocate 1.79 GiB. GPU 0 has a total capacity of 14.56 GiB of which 1.45 
+06:43:11 B_gemma3-4b__fp32__chat_nothink ok=False wall=66s peak_rss=9.7GB mem_avail_after=31.0GB OutOfMemoryError: CUDA out of memory. Tried to allocate 1.85 GiB. GPU 0 has a total capacity of 14.56 GiB of which 1.40 
+06:45:01 B_nilechat-4b__fp32__raw ok=False wall=111s peak_rss=8.1GB mem_avail_after=31.0GB OutOfMemoryError: CUDA out of memory. Tried to allocate 2.08 GiB. GPU 0 has a total capacity of 14.56 GiB of which 2.03 
+06:46:37 B_nilechat-4b__fp32__chat_nothink ok=False wall=96s peak_rss=9.2GB mem_avail_after=31.1GB OutOfMemoryError: CUDA out of memory. Tried to allocate 2.15 GiB. GPU 0 has a total capacity of 14.56 GiB of which 1.93 

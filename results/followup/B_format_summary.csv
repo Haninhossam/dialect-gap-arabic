@@ -1,0 +1,23 @@
+model,prec,format,error,mass_median,mass_p10,acc_all,agree_with_raw,tok_per_s,gen,acc_eng_Latn,acc_arb_Arab,acc_arz_Arab
+qwen3.5-4b,fp32,raw,OutOfMemoryError: CUDA out of memory. Tried to allocate 1.91 GiB. GPU 0 has a total capacity of 14.56 GiB of which 390.8,,,,,,,,,
+qwen3.5-4b,fp32,chat_nothink,OutOfMemoryError: CUDA out of memory. Tried to allocate 2.00 GiB. GPU 0 has a total capacity of 14.56 GiB of which 254.8,,,,,,,,,
+qwen3.5-4b,fp32,raw_prefill_nothink,OutOfMemoryError: CUDA out of memory. Tried to allocate 1.95 GiB. GPU 0 has a total capacity of 14.56 GiB of which 358.8,,,,,,,,,
+qwen3.5-4b,fp16,raw,,0.24562634706624686,0.16052953272452325,0.84,1.0,836.7240597690742,"
+
+<think>
+
+</think>
+
+بناءً على النص المقدم، يمكن تحليل الخيارات كالتالي:
+
+1. ",0.93,0.84,0.75
+qwen3.5-4b,fp16,chat_nothink,,0.002528706542830857,1.194792917464726e-05,0.48,0.5133333333333333,866.4676009124934,"بناءً على النص المقدم، يمكن تحليل الخيارات كالتالي:
+
+1.  **النص يقول:**",0.81,0.31,0.32
+qwen3.5-4b,fp16,raw_prefill_nothink,,0.0005212721112128221,2.327236934142828e-05,0.5533333333333333,0.5966666666666667,857.9707173718062,"بناءً على النص المقدم، يمكن تحليل الخيارات كالتالي:
+
+1.  **تحليل النص**:",0.87,0.4,0.39
+gemma3-4b,fp32,raw,OutOfMemoryError: CUDA out of memory. Tried to allocate 1.79 GiB. GPU 0 has a total capacity of 14.56 GiB of which 1.45 ,,,,,,,,,
+gemma3-4b,fp32,chat_nothink,OutOfMemoryError: CUDA out of memory. Tried to allocate 1.85 GiB. GPU 0 has a total capacity of 14.56 GiB of which 1.40 ,,,,,,,,,
+nilechat-4b,fp32,raw,OutOfMemoryError: CUDA out of memory. Tried to allocate 2.08 GiB. GPU 0 has a total capacity of 14.56 GiB of which 2.03 ,,,,,,,,,
+nilechat-4b,fp32,chat_nothink,OutOfMemoryError: CUDA out of memory. Tried to allocate 2.15 GiB. GPU 0 has a total capacity of 14.56 GiB of which 1.93 ,,,,,,,,,

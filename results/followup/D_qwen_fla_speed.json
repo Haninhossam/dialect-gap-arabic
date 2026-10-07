@@ -1,0 +1,6 @@
+{
+ "pip_ok": true,
+ "pip_err": "",
+ "stdout": "{\"ok\": true, \"tok_per_s\": 657.485519066474, \"error\": null}\n",
+ "stderr": "\nFetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]\nFetching 2 files:  50%|█████     | 1/2 [00:43<00:43, 43.45s/it]\nFetching 2 files: 100%|██████████| 2/2 [00:52<00:00, 22.96s/it]\nFetching 2 files: 100%|██████████| 2/2 [00:52<00:00, 26.03s/it]\n\nLoading weights:   0%|          | 0/426 [00:00<?, ?it/s]\nLoading weights:   0%|          | 1/426 [00:04<29:51,  4.22s/it]\nLoading weights:  46%|████▌     | 195/426 [00:04<00:03, 62.66it/s]\nLoading weights:  63%|██████▎   | 269/426 [00:05<00:02, 70.28it/s]\nLoading weights:  73%|███████▎  | 313/426 [00:05<00:01, 73.44it/s]\nLoading weights:  81%|████████  | 344/426 [00:05<00:01, 78.98it/s]\nLoading weights:  86%|████████▋ | 368/426 [00:06<00:00, 78.41it/s]\nLoading weights:  91%|█████████ | 387/426 [00:06<00:00, 81.97it/s]\nLoading weights:  95%|█████████▍| 403/426 [00:06<00:00, 87.36it/s]\nLoading weights:  98%|█████████▊| 418/426 [00:06<00:00, 86.11it/s]\nLoading weights: 100%|██████████| 426/426 [00:06<00:00, 62.65it/s]\n[transformers] `causal_conv1d_fn` is falling back to its reference PyTorch implementation because `causal_conv1d` is not installed. This is correct but much slower; install `causal_conv1d` for the optimized kernel.\n"
+}

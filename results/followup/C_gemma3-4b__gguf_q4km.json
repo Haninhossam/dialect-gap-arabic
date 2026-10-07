@@ -1,0 +1,22 @@
+{
+ "model": "google/gemma-3-4b-it",
+ "format": "gguf_q4km",
+ "backend": "cpu",
+ "gpu_offload": false,
+ "llama_cpp_python": "0.3.36",
+ "llama_cpp_commit_converter": "43fe9c6 Tue Oct 6 07:41:57 2026 +0200",
+ "size_gb": 2.489894176,
+ "cpu": {
+  "n": 8,
+  "n_nonfinite_test": 0,
+  "argmax_agreement": 1.0,
+  "max_abs_logprob_diff": 1.0529460906982422,
+  "mean_kl_4way": 2.9546870791818947e-05,
+  "sec_per_prompt": 7.665619046625011,
+  "tok_per_s": 25.92745592901657,
+  "median_letter_mass": 0.992551157836973,
+  "valid": true,
+  "acc": 1.0
+ },
+ "ok": true
+}

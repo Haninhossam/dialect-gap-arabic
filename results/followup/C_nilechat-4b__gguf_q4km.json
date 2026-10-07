@@ -1,0 +1,22 @@
+{
+ "model": "MBZUAI-Paris/Nile-Chat-4B",
+ "format": "gguf_q4km",
+ "backend": "cpu",
+ "gpu_offload": false,
+ "llama_cpp_python": "0.3.36",
+ "llama_cpp_commit_converter": "43fe9c6 Tue Oct 6 07:41:57 2026 +0200",
+ "size_gb": 2.489894496,
+ "cpu": {
+  "n": 8,
+  "n_nonfinite_test": 0,
+  "argmax_agreement": 1.0,
+  "max_abs_logprob_diff": 0.8746433258056641,
+  "mean_kl_4way": 0.011979358270764351,
+  "sec_per_prompt": 7.451514718875046,
+  "tok_per_s": 26.538228462340644,
+  "median_letter_mass": 0.9215255311421622,
+  "valid": true,
+  "acc": 1.0
+ },
+ "ok": true
+}

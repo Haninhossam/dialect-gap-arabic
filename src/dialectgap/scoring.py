@@ -46,7 +46,13 @@ def score_mcq(model, tokenizer, prompts: list[str], batch_size: int = 4, max_len
                         max_length=max_length, add_special_tokens=add_special_tokens).to(device)
         # explicit positions so left padding does not shift them
         position_ids = (enc["attention_mask"].cumsum(-1) - 1).clamp(min=0)
-        logits = model(**enc, position_ids=position_ids).logits[:, -1, :].float()
+        # only the last position is scored: logits_to_keep=1 avoids materialising [batch, seq, vocab] logits
+        # (~2 GB for 8 prompts x 300 tokens x 262k vocab in fp32, which ran out of GPU memory in follow-up run 3)
+        try:
+            out = model(**enc, position_ids=position_ids, logits_to_keep=1)
+        except TypeError:  # model forward without logits_to_keep
+            out = model(**enc, position_ids=position_ids)
+        logits = out.logits[:, -1, :].float()
         bad = ~torch.isfinite(logits).all(dim=-1)
         lsm = torch.log_softmax(logits, dim=-1)
         out_sp.append(lsm[:, space_ids.to(logits.device)].cpu().numpy())
