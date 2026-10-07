@@ -45,7 +45,8 @@ for i in range(torch.cuda.device_count()):
     p = torch.cuda.get_device_properties(i); print(i, p.name, f'{p.total_memory/1e9:.1f} GB')
 if torch.cuda.device_count() < 2:
     print('WARNING: fewer than 2 GPUs. Choose Accelerator = GPU T4 x2; otherwise the fp32 reference offloads to CPU (much slower).')
-OUT = '/kaggle/working/sanity' if os.path.exists('/kaggle') else 'results/sanity'
+from dialectgap.env import on_kaggle
+OUT = '/kaggle/working/sanity' if on_kaggle() else 'results/sanity'
 os.makedirs(OUT, exist_ok=True)"""),
 md("## Prompts: 8 Belebele questions (paired by uid) in English, MSA and Egyptian (same items → 24 prompts)"),
 code("""from dialectgap.data import load_belebele, load_belebele_aligned

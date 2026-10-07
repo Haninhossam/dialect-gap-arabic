@@ -9,6 +9,8 @@ from datasets import load_dataset
 BELEBELE_VARIETIES = [
     "eng_Latn", "arb_Arab", "arz_Arab", "apc_Arab", "ary_Arab", "ars_Arab", "acm_Arab", "arb_Latn",
 ]
+# DialectalArabicMMLU `dialect` values (verified 2026-10-06: 3,135 items each, paired by (domain, qid)).
+DAMMLU_VARIETIES = ["ENG", "MSA", "EGY", "KSA", "MAG", "SYR", "UAE"]
 
 
 def load_belebele(variety: str, cache_dir=None) -> list[dict]:
@@ -47,5 +49,49 @@ def load_belebele_aligned(varieties=BELEBELE_VARIETIES, cache_dir=None) -> dict[
 
 
 def load_dialectal_mmlu(cache_dir=None):
-    """Raw DialectalArabicMMLU test split; column mapping is fixed in Phase 2 after inspection."""
+    """Raw DialectalArabicMMLU test split (columns: dialect, qid, question, choices, answer, domain)."""
     return load_dataset("MBZUAI/Dialectal-Arabic-MMLU", split="test", cache_dir=cache_dir)
+
+
+def load_dialectal_mmlu_aligned(varieties=DAMMLU_VARIETIES, cache_dir=None) -> dict[str, list[dict]]:
+    """Common item format, paired by uid = "domain#qid" (qid alone repeats across domains), sorted uid order.
+
+    Raises if any variety has a different item set or a different gold answer for the same uid.
+    """
+    by_var = {v: {} for v in varieties}
+    for r in load_dialectal_mmlu(cache_dir=cache_dir):
+        if r["dialect"] not in by_var:
+            continue
+        uid = f"{r['domain']}#{r['qid']}"
+        if uid in by_var[r["dialect"]]:
+            raise ValueError(f"duplicate uid {uid} in {r['dialect']}")
+        by_var[r["dialect"]][uid] = {"uid": uid, "variety": r["dialect"], "domain": r["domain"], "passage": "",
+                                     "question": r["question"], "options": list(r["choices"]),
+                                     "answer": int(r["answer"])}
+    ref_v = varieties[0]
+    ref = by_var[ref_v]
+    for v, d in by_var.items():
+        if set(d) != set(ref):
+            raise ValueError(f"{v}: item set differs from {ref_v}")
+        bad = [u for u in ref if d[u]["answer"] != ref[u]["answer"]]
+        if bad:
+            raise ValueError(f"{v}: {len(bad)} gold answers differ from {ref_v}, e.g. {bad[:3]}")
+        if any(len(it["options"]) != 4 for it in d.values()):
+            raise ValueError(f"{v}: an item does not have exactly 4 options")
+    order = sorted(ref)
+    return {v: [by_var[v][u] for u in order] for v in varieties}
+
+
+def stratified_subset(items: list[dict], per_domain: int = 50, seed: int = 13) -> set[str]:
+    """Deterministic per-domain sample of uids (same uids for every variety, since uids are paired)."""
+    import numpy as np
+    by_dom = {}
+    for it in items:
+        by_dom.setdefault(it["domain"], []).append(it["uid"])
+    rng = np.random.default_rng(seed)
+    chosen = set()
+    for dom in sorted(by_dom):
+        uids = sorted(by_dom[dom])
+        k = min(per_domain, len(uids))
+        chosen.update(uids[i] for i in sorted(rng.choice(len(uids), size=k, replace=False)))
+    return chosen

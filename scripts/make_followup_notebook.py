@@ -49,7 +49,8 @@ from dialectgap.env import load_hf_token
 load_hf_token()
 print('torch', torch.__version__, '| transformers', transformers.__version__,
       '| GPUs', [torch.cuda.get_device_name(i) for i in range(torch.cuda.device_count())])
-OUT = '/kaggle/working/followup' if os.path.exists('/kaggle') else 'results/followup'
+from dialectgap.env import on_kaggle
+OUT = '/kaggle/working/followup' if on_kaggle() else 'results/followup'
 os.makedirs(OUT, exist_ok=True)
 REF = 'results/sanity'
 LOG = f'{OUT}/progress.log'   # one line per configuration: ok, wall time, peak RAM, RAM left

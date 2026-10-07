@@ -40,3 +40,11 @@ def load_hf_token(check_repos=("google/gemma-3-4b-it",)) -> str | None:
         model_info(repo, token=token)  # raises GatedRepoError / 401 if terms not accepted
         print(f"  access OK: {repo}")
     return user
+
+
+def on_kaggle() -> bool:
+    """True only inside a Kaggle notebook. Checking that '/kaggle' exists is not enough: on Windows it resolves
+    to C:/kaggle, which can be a user's own folder (local dry runs wrote into one)."""
+    import sys
+    return bool(os.environ.get("KAGGLE_KERNEL_RUN_TYPE")) or (
+        sys.platform.startswith("linux") and os.path.isdir("/kaggle/input"))
